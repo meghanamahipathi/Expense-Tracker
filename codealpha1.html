@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background-image: url('https://e0.pxfuel.com/wallpapers/965/212/desktop-wallpaper-get-income-expense-tracker.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 100vh; /* Set the height to cover the entire viewport */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .edit-btn,
+    .delete-btn {
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: blue;
+    }
+
+    .edit-btn:hover,
+    .delete-btn:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Expense Tracker</h1>
+    <form id="expense-form">
+      <label for="expense">Expense:</label>
+      <input type="text" id="expense" required>
+      <label for="amount">Amount:</label>
+      <input type="number" id="amount" required>
+      <button type="button" onclick="addExpense()">Add Expense</button>
+    </form>
+    <table id="expense-table">
+      <thead>
+        <tr>
+          <th>Expense</th>
+          <th>Amount</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="expense-list"></tbody>
+    </table>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFromLocalStorage();
+    });
+
+    function addExpense() {
+      const expenseInput = document.getElementById('expense');
+      const amountInput = document.getElementById('amount');
+
+      if (!expenseInput.value || !amountInput.value) {
+        alert('Please enter both expense and amount');
+        return;
+      }
+
+      const expense = expenseInput.value;
+      const amount = parseFloat(amountInput.value).toFixed(2);
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${expense}</td>
+        <td>₹${amount}</td>
+        <td>
+          <button class="edit-btn" onclick="editExpense(this)">Edit</button>
+          <button class="delete-btn" onclick="deleteExpense(this)">Delete</button>
+        </td>
+      `;
+
+      document.getElementById('expense-list').appendChild(row);
+
+      saveToLocalStorage();
+
+      expenseInput.value = '';
+      amountInput.value = '';
+    }
+
+    function editExpense(button) {
+      const row = button.parentElement.parentElement;
+      const expenseInput = document.getElementById('expense');
+      const amountInput = document.getElementById('amount');
+
+      expenseInput.value = row.children[0].textContent;
+      amountInput.value = row.children[1].textContent.replace('₹', '');
+
+      row.remove();
+      saveToLocalStorage();
+    }
+
+    function deleteExpense(button) {
+      const row = button.parentElement.parentElement;
+      row.remove();
+      saveToLocalStorage();
+    }
+
+    function saveToLocalStorage() {
+      const rows = document.querySelectorAll('#expense-list tr');
+      const expenses = [];
+
+      rows.forEach(row => {
+        const expense = row.children[0].textContent;
+        const amount = parseFloat(row.children[1].textContent.replace('₹', ''));
+        expenses.push({ expense, amount });
+      });
+
+      localStorage.setItem('expenses', JSON.stringify(expenses));
+    }
+
+    function loadFromLocalStorage() {
+      const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+
+      expenses.forEach(expense => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${expense.expense}</td>
+          <td>₹${expense.amount.toFixed(2)}</td>
+          <td>
+            <button class="edit-btn" onclick="editExpense(this)">Edit</button>
+            <button class="delete-btn" onclick="deleteExpense(this)">Delete</button>
+          </td>
+        `;
+
+        document.getElementById('expense-list').appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
